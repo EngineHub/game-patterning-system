@@ -3,9 +3,11 @@ import {useSelector} from "react-redux";
 import {RootState} from "../data/redux/store";
 import {BlockData, BlockState, serializeState} from "../data/BlockData";
 import {StringSelector} from "./StringSelector";
-import {Box, Columns, Content} from "react-bulma-components";
+import {Box, Columns} from "react-bulma-components";
 import {BlockStateSelector} from "./BlockStateSelector";
 import {asNonNull} from "../util/preconditions";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faInfo} from "@fortawesome/free-solid-svg-icons";
 
 interface PatternBuilderImplProps {
     blockData: Record<string, BlockData>;
@@ -37,15 +39,18 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
             </div>
         </Columns.Column>
         <Columns.Column className="has-background-success-dark">
-            <Content>
-                <h3 className="subtitle">Pattern</h3>
-                <p>
-                    <small>
-                        We&apos;re showing <code>minecraft:</code> here for clarity, but you don&apos;t need
-                        it
-                    </small>
-                </p>
-            </Content>
+            <h3 className="subtitle">Pattern</h3>
+            <p className="mb-3">
+                <span className="icon-text">
+                    <span className="icon has-text-info-light">
+                        <FontAwesomeIcon icon={faInfo}/>
+                    </span>
+                </span>
+                <small>
+                    We&apos;re showing <code>minecraft:</code> here for clarity, but you don&apos;t need
+                    it
+                </small>
+            </p>
             <Box>
                 <span className="is-family-code">{Array.from(pattern).map((x, i) => {
                     if (x === ',' || x === '[' || x === ':') {
