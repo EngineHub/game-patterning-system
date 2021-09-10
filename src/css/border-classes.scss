@@ -1,0 +1,12 @@
+@import "bulma-vars";
+@import "~bulma/sass/utilities/derived-variables";
+
+@each $name, $pair in $colors {
+  $color: nth($pair, 1);
+  .has-border-#{$name} {
+    border-radius: 0.25em;
+    border-width: 0.125em;
+    border-style: solid;
+    border-color: $color !important;
+  }
+}

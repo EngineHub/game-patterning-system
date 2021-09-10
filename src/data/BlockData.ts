@@ -77,7 +77,7 @@ export type BlockProperty = IntBlockProperty | EnumBlockProperty | DirectionBloc
 
 export function loadFromRaw(blockManifest: RawBlockData): BlockData {
     const properties = loadRawProperties(blockManifest.properties);
-    const defaultState = parseDefaultState(blockManifest.defaultstate, properties);
+    const defaultState = deserializeStateChecked(blockManifest.defaultstate, properties);
     return {
         defaultState,
         properties,
@@ -114,29 +114,37 @@ function loadRawProperties(properties: Record<string, RawBlockProperty>): Record
     return newRecord;
 }
 
-function parseDefaultState(defaultState: string, properties: Record<string, BlockProperty>): BlockState {
-    const leftBracketIdx = defaultState.indexOf('[');
+export function extractIdFromStateString(stateString: string) : string {
+    const leftBracketIdx = stateString.indexOf('[');
     if (leftBracketIdx < 0) {
-        return {id: defaultState, properties: {}};
+        return stateString;
     }
-    if (defaultState.indexOf(']') !== defaultState.length - 1) {
-        throw new Error(`End bracket does not exist or is not at end of state: ${defaultState}`);
+    return stateString.substring(0, leftBracketIdx);
+}
+
+export function deserializeStateChecked(stateString: string, properties: Record<string, BlockProperty>): BlockState {
+    const leftBracketIdx = stateString.indexOf('[');
+    if (leftBracketIdx < 0) {
+        return {id: stateString, properties: {}};
     }
-    const propertyAssigns = defaultState.substring(leftBracketIdx + 1, defaultState.length - 1).split(",");
+    if (stateString.indexOf(']') !== stateString.length - 1) {
+        throw new Error(`End bracket does not exist or is not at end of state: ${stateString}`);
+    }
+    const propertyAssigns = stateString.substring(leftBracketIdx + 1, stateString.length - 1).split(",");
     const newProperties: BlockState['properties'] = {};
     for (const assignment of propertyAssigns) {
         const [key, rawValue] = assignment.split('=', 2);
         requireNonNull(key);
-        requireNonNull(rawValue, `Missing property assignment for ${key}: ${defaultState}`);
+        requireNonNull(rawValue, `Missing property assignment for ${key}: ${stateString}`);
         const property = properties[key];
-        requireNonNull(property, `Assigning to a non-existent property ${key}: ${defaultState}`);
+        requireNonNull(property, `Assigning to a non-existent property ${key}: ${stateString}`);
         const value = parseFromString(property.type, rawValue);
         if (typeof value === "undefined" || (property.values as unknown[]).indexOf(value) < 0) {
-            throw new Error(`Value ${rawValue} is not allowed by the property ${key}: ${defaultState}`);
+            throw new Error(`Value ${rawValue} is not allowed by the property ${key}: ${stateString}`);
         }
         newProperties[key] = value;
     }
-    return {id: defaultState.substring(0, leftBracketIdx), properties: newProperties};
+    return {id: stateString.substring(0, leftBracketIdx), properties: newProperties};
 }
 
 export function serializeState(blockData: BlockData, state: BlockState['properties']): string {

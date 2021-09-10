@@ -4,10 +4,11 @@ import {Columns, Section} from "react-bulma-components";
 import PatternBuilder from "./PatternBuilder";
 import {Provider} from "react-redux";
 import {store} from "../data/redux/store";
+import {IdProvider} from "react-use-id-hook";
 
 const App: React.FC = () => {
-    return <>
-        <Provider store={store}>
+    return <Provider store={store}>
+        <IdProvider>
             <AppNavbar/>
             <Section>
                 <Columns>
@@ -29,7 +30,7 @@ const App: React.FC = () => {
                     <Columns.Column size="one-fifth"/>
                 </Columns>
             </Section>
-        </Provider>
-    </>;
+        </IdProvider>
+    </Provider>;
 };
 export default App;

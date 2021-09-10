@@ -1,16 +1,55 @@
-import React, {useCallback, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "../data/redux/store";
-import {BlockData, BlockState, serializeState} from "../data/BlockData";
+import {
+    BlockData,
+    BlockState,
+    deserializeStateChecked,
+    extractIdFromStateString,
+    serializeState
+} from "../data/BlockData";
 import {StringSelector} from "./StringSelector";
-import {Box, Columns} from "react-bulma-components";
+import {Box, Columns, Icon} from "react-bulma-components";
 import {BlockStateSelector} from "./BlockStateSelector";
 import {asNonNull} from "../util/preconditions";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faInfo} from "@fortawesome/free-solid-svg-icons";
+import {ShareButton} from "./ShareButton";
+import {useLocation} from "react-use";
+import * as queryString from "query-string";
 
 interface PatternBuilderImplProps {
     blockData: Record<string, BlockData>;
+}
+
+function useHashState(
+    blockData: Record<string, BlockData>,
+    setSelectedId: (value: string) => void,
+    setState: (value: BlockState['properties']) => void,
+    shareLink: string,
+): void {
+    const {hash} = useLocation();
+    const parsedHash = useMemo(() => queryString.parse(hash || ''), [hash]);
+    const patternStringFromHash = useMemo(() => {
+        const pattern = parsedHash['pattern'];
+        if (pattern instanceof Array) {
+            return pattern[0];
+        }
+        return pattern;
+    }, [parsedHash]);
+
+    useEffect(() => {
+        if (!patternStringFromHash) {
+            return;
+        }
+        const hashBlockData = blockData[extractIdFromStateString(patternStringFromHash)];
+        if (typeof hashBlockData === "undefined") {
+            return;
+        }
+        const state = deserializeStateChecked(patternStringFromHash, hashBlockData.properties);
+        setSelectedId(state.id);
+        setState({...hashBlockData.defaultState.properties, ...state.properties});
+    }, [blockData, patternStringFromHash, setSelectedId, setState]);
 }
 
 const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
@@ -21,11 +60,17 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
     const [state, setState] = useState<BlockState['properties']>({...currentBlockData.defaultState.properties});
 
     const pattern = useMemo(() => serializeState(currentBlockData, state), [currentBlockData, state]);
+    const shareLink = useMemo(
+        () => new URL(`#pattern=${encodeURIComponent(pattern)}`, document.location.href).href,
+        [pattern]
+    );
 
     const safeSetSelectedId = useCallback((selected: string) => {
         setSelectedId(selected);
         setState({...asNonNull(blockData[selected]).defaultState.properties});
-    }, [setSelectedId, setState, blockData]);
+    }, [blockData]);
+
+    useHashState(blockData, setSelectedId, setState, shareLink);
 
     return <Columns centered>
         <Columns.Column narrow className="has-background-primary-dark">
@@ -39,13 +84,18 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
             </div>
         </Columns.Column>
         <Columns.Column className="has-background-success-dark">
-            <h3 className="subtitle">Pattern</h3>
+            <div className="is-flex is-justify-content-space-between">
+                <div>
+                    <h3 className="subtitle">Pattern</h3>
+                </div>
+                <ShareButton link={shareLink}/>
+            </div>
             <p className="mb-3">
-                <span className="icon-text">
-                    <span className="icon has-text-info-light">
+                <Icon text color="info" colorVariant="light">
+                    <Icon>
                         <FontAwesomeIcon icon={faInfo}/>
-                    </span>
-                </span>
+                    </Icon>
+                </Icon>
                 <small>
                     We&apos;re showing <code>minecraft:</code> here for clarity, but you don&apos;t need
                     it
