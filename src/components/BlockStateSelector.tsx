@@ -31,7 +31,7 @@ interface BlockPropertySelectorProps {
 }
 
 const BlockPropertySelector: React.FC<BlockPropertySelectorProps> = ({value, setValue, propertyKey, property}) => {
-    return <div className="my-1 is-flex is-align-items-center is-justify-content-space-between">
+    return <div className="block is-flex is-align-items-center is-justify-content-space-between">
         <Form.Label className="my-0">Select value for <code>{propertyKey}</code></Form.Label>
         <div>
         <Form.Select value={value} onChange={

@@ -11,7 +11,7 @@ const App: React.FC = () => {
             <AppNavbar/>
             <Section>
                 <Columns>
-                    <Columns.Column size="one-quarter">
+                    <Columns.Column size="one-fifth">
                         <p>
                             This is the Game Patterning System, a website designed by{' '}
                             <a href="https://enginehub.org/">EngineHub</a> to assist with
@@ -23,9 +23,10 @@ const App: React.FC = () => {
                         </p>
                     </Columns.Column>
                     <Columns.Column>
+                        <h2 className="title">Simple Block Pattern</h2>
                         <PatternBuilder/>
                     </Columns.Column>
-                    <Columns.Column size="one-quarter"/>
+                    <Columns.Column size="one-fifth"/>
                 </Columns>
             </Section>
         </Provider>

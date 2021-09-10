@@ -3,7 +3,7 @@ import {useSelector} from "react-redux";
 import {RootState} from "../data/redux/store";
 import {BlockData, BlockState, serializeState} from "../data/BlockData";
 import {StringSelector} from "./StringSelector";
-import {Columns, Form} from "react-bulma-components";
+import {Box, Columns, Content} from "react-bulma-components";
 import {BlockStateSelector} from "./BlockStateSelector";
 import {asNonNull} from "../util/preconditions";
 
@@ -27,7 +27,7 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
 
     return <Columns centered>
         <Columns.Column narrow className="has-background-primary-dark">
-            <h2>Pick a block</h2>
+            <h3 className="subtitle">Pick a block</h3>
             <StringSelector selected={selectedId} setSelected={safeSetSelectedId} options={validIds}/>
             <div className="has-background-info-dark p-3">
                 <BlockStateSelector
@@ -36,15 +36,28 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
                     properties={currentBlockData.properties}/>
             </div>
         </Columns.Column>
-        <Columns.Column size="one-third" className="has-background-success-dark">
-            <h2>Pattern</h2>
-            <code>{Array.from(pattern).map((x, i) => {
-                if (x === ',' || x === '[') {
-                    // safe to use index here, these are all interchangeable
-                    return <React.Fragment key={`${i}-${x}`}>{x}<wbr/></React.Fragment>;
-                }
-                return x;
-            })}</code>
+        <Columns.Column className="has-background-success-dark">
+            <Content>
+                <h3 className="subtitle">Pattern</h3>
+                <p>
+                    <small>
+                        We&apos;re showing <code>minecraft:</code> here for clarity, but you don&apos;t need
+                        it
+                    </small>
+                </p>
+            </Content>
+            <Box>
+                <span className="is-family-code">{Array.from(pattern).map((x, i) => {
+                    if (x === ',' || x === '[' || x === ':') {
+                        // safe to use index here, these are all interchangeable
+                        return <React.Fragment key={`${i}-${x}`}>
+                            {x}
+                            <wbr/>
+                        </React.Fragment>;
+                    }
+                    return x;
+                })}</span>
+            </Box>
         </Columns.Column>
     </Columns>;
 };
