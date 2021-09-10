@@ -25,6 +25,9 @@ code {
 $text: $white;
 $text-strong: $white-ter;
 
+$link: $green;
+$link-hover: lighten($green, 30%);
+
 $navbar-background-color: $enginehub-purple;
 
 @import "~bulma/bulma";

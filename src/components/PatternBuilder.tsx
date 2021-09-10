@@ -36,12 +36,12 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
                     properties={currentBlockData.properties}/>
             </div>
         </Columns.Column>
-        <Columns.Column size="one-quarter" className="has-background-success-dark">
+        <Columns.Column size="one-third" className="has-background-success-dark">
             <h2>Pattern</h2>
             <code>{Array.from(pattern).map((x, i) => {
-                if (x === ',') {
+                if (x === ',' || x === '[') {
                     // safe to use index here, these are all interchangeable
-                    return <React.Fragment key={i}>{x}<wbr/></React.Fragment>;
+                    return <React.Fragment key={`${i}-${x}`}>{x}<wbr/></React.Fragment>;
                 }
                 return x;
             })}</code>
