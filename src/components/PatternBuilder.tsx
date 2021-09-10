@@ -26,7 +26,6 @@ function useHashState(
     blockData: Record<string, BlockData>,
     setSelectedId: (value: string) => void,
     setState: (value: BlockState['properties']) => void,
-    shareLink: string,
 ): void {
     const {hash} = useLocation();
     const parsedHash = useMemo(() => queryString.parse(hash || ''), [hash]);
@@ -70,7 +69,7 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
         setState({...asNonNull(blockData[selected]).defaultState.properties});
     }, [blockData]);
 
-    useHashState(blockData, setSelectedId, setState, shareLink);
+    useHashState(blockData, setSelectedId, setState);
 
     return <Columns centered>
         <Columns.Column narrow className="has-background-primary-dark">
