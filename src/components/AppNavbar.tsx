@@ -7,7 +7,7 @@ const AppNavbar: React.FC = () => {
     return <Navbar role="navigation" aria-label="main navigation" active={open}>
         <Navbar.Brand>
             <Navbar.Item href="/">
-                <img src={logo} width={64} height={128} alt="GPS"/>
+                <img src={logo} alt="GPS"/>
             </Navbar.Item>
             <Navbar.Burger
                 onClick={(): void => setOpen(x => !x)}
