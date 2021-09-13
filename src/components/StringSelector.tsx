@@ -41,6 +41,7 @@ export const StringSelector: React.FC<StringSelectorProps> = ({selected, setSele
         [selected, fixedOptions]
     );
     return <Select
+        aria-label="Pick a block"
         options={Array.from(fixedOptions.values())}
         value={selectedOptionObject}
         onChange={(v) => void (v && setSelected(v.value))}
