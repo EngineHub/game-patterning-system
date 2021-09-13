@@ -16,10 +16,16 @@ const SELECT_STYLES: ReactComponentProps<Select>['styles'] = {
             zIndex: 5,
         };
     },
+    menuPortal(styles) {
+        return {
+            ...styles,
+            width: "min(50%, 40ch)",
+            zIndex: 9999,
+        };
+    },
 };
 
 const SELECT_THEME: (theme: Theme) => Theme = (theme) => {
-    console.log(theme.colors);
     return {
         ...theme,
         colors: {
@@ -48,5 +54,8 @@ export const StringSelector: React.FC<StringSelectorProps> = ({selected, setSele
         isSearchable
         styles={SELECT_STYLES}
         theme={SELECT_THEME}
+        menuPortalTarget={document.body}
+        menuPosition="absolute"
+        menuShouldScrollIntoView={false}
     />;
 };
