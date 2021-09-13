@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import Select, {Theme} from "react-select";
-import {ReactComponentProp} from "../util/types";
+import {ReactComponentProps} from "../util/types";
 
 export interface StringSelectorProps {
     selected: string | undefined;
@@ -9,7 +9,7 @@ export interface StringSelectorProps {
 }
 
 // noinspection JSUnusedGlobalSymbols
-const SELECT_STYLES: ReactComponentProp<Select>['styles'] = {
+const SELECT_STYLES: ReactComponentProps<Select>['styles'] = {
     container(styles) {
         return {
             ...styles,
