@@ -1,0 +1,7 @@
+@use "./bulma-vars" as scss-vars;
+
+:root {
+  --scheme-main: #{scss-vars.$scheme-main};
+  --info-light: #{scss-vars.$info-light};
+  --text: #{scss-vars.$text};
+}

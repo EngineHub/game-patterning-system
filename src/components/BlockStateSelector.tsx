@@ -34,7 +34,7 @@ const BlockPropertySelector: React.FC<BlockPropertySelectorProps> = ({value, set
     return <div className="block is-flex is-align-items-center is-justify-content-space-between">
         <Form.Label className="my-0">Select value for <code>{propertyKey}</code></Form.Label>
         <div>
-        <Form.Select value={value} onChange={
+        <Form.Select size="small" value={value} onChange={
             (e): void => {
                 const selected = parseFromString(property.type, e.currentTarget.value);
                 requireNonNull(selected, "Should always be valid");

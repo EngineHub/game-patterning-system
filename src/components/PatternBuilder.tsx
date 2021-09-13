@@ -72,7 +72,7 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
     useHashState(blockData, setSelectedId, setState);
 
     return <Columns centered>
-        <Columns.Column narrow className="has-background-primary-dark">
+        <Columns.Column size="one-third" className="has-background-primary-dark">
             <h3 className="subtitle">Pick a block</h3>
             <StringSelector selected={selectedId} setSelected={safeSetSelectedId} options={validIds}/>
             <div className="has-background-info-dark p-3">
