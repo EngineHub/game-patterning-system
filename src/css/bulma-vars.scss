@@ -13,9 +13,11 @@ $scheme-invert-ter: $white-ter;
 $primary-dark: #008672;
 $info-light: lighten($cyan, 10%);
 
-$background: #F1F1F1;
+$background: $black-ter;
 
-$code: darken($red, 30%);
+$modal-background-background-color: $grey;
+
+$code: #F24E6E;
 $pre: $code;
 $code-padding: 0.125em;
 

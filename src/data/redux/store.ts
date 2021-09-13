@@ -24,7 +24,7 @@ async function init(): Promise<void> {
         store.dispatch(setBlockData(await loadBlockData()));
     } catch (e) {
         if (e instanceof Error) {
-            store.dispatch(failBlockData(e));
+            store.dispatch(failBlockData(JSON.stringify(e)));
         }
     }
 }

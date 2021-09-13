@@ -121,8 +121,8 @@ const PatternBuilder: React.FC = () => {
     if (typeof blockData === "undefined") {
         return <div>Loading...</div>;
     }
-    if (blockData instanceof Error) {
-        return <div>Error: {blockData.message}</div>;
+    if (typeof blockData === "string") {
+        return <div>Error: {blockData}</div>;
     }
     return <PatternBuilderImpl blockData={blockData}/>;
 };

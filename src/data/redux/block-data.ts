@@ -2,7 +2,7 @@ import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {BlockData} from "../BlockData";
 
 export interface BlockDataSlice {
-    data: Record<string, BlockData> | Error | undefined;
+    data: Record<string, BlockData> | string | undefined;
 }
 
 const initialState: BlockDataSlice = {
@@ -16,7 +16,7 @@ export const blockData = createSlice({
         setBlockData: (state, action: PayloadAction<Record<string, BlockData>>) => {
             state.data = action.payload;
         },
-        failBlockData: (state, action: PayloadAction<Error>) => {
+        failBlockData: (state, action: PayloadAction<string>) => {
             state.data = action.payload;
         },
     },
