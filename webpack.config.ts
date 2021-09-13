@@ -71,17 +71,27 @@ const options: (env: KnownEnv) => Configuration = (env) => {
                 },
             ],
         },
+        optimization: {
+            runtimeChunk: "single",
+            splitChunks: {
+                chunks: "all",
+            },
+        },
+        performance: {
+            maxEntrypointSize: 512000,
+        },
     };
     if (env.WEBPACK_SERVE) {
         return merge(common, {
             mode: 'development',
-            devtool: 'inline-source-map',
+            devtool: 'eval-source-map',
             devServer: {
                 static: './dist',
             },
         });
     } else {
         return merge(common, {
+            devtool: 'source-map',
             mode: 'production',
         });
     }
