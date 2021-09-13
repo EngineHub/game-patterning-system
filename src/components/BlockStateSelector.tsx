@@ -1,5 +1,5 @@
 import React from "react";
-import {Form} from "react-bulma-components";
+import {Columns, Form} from "react-bulma-components";
 import {BlockProperty, BlockPropertyType, BlockPropertyTypeInJs, BlockState, parseFromString} from "../data/BlockData";
 import {asNonNull, requireNonNull} from "../util/preconditions";
 
@@ -31,18 +31,22 @@ interface BlockPropertySelectorProps {
 }
 
 const BlockPropertySelector: React.FC<BlockPropertySelectorProps> = ({value, setValue, propertyKey, property}) => {
-    return <div className="block is-flex is-align-items-center is-justify-content-space-between">
-        <Form.Label className="my-0">Select value for <code>{propertyKey}</code></Form.Label>
+    return <Columns centered className="block">
+        <Columns.Column>
+            <Form.Label className="my-0">Select value for <code>{propertyKey}</code></Form.Label>
+        </Columns.Column>
         <div>
-        <Form.Select size="small" value={value} onChange={
-            (e): void => {
-                const selected = parseFromString(property.type, e.currentTarget.value);
-                requireNonNull(selected, "Should always be valid");
-                return setValue(selected);
-            }
-        }>
-            {property.values.map(v => <option key={`${v}`}>{`${v}`}</option>)}
-        </Form.Select>
+            <Columns.Column>
+                <Form.Select size="small" value={value} onChange={
+                    (e): void => {
+                        const selected = parseFromString(property.type, e.currentTarget.value);
+                        requireNonNull(selected, "Should always be valid");
+                        return setValue(selected);
+                    }
+                }>
+                    {property.values.map(v => <option key={`${v}`}>{`${v}`}</option>)}
+                </Form.Select>
+            </Columns.Column>
         </div>
-    </div>;
+    </Columns>;
 };
