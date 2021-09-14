@@ -75,7 +75,8 @@
     },
     "pnpm": {
         "overrides": {
-            "@types/webpack-dev-server>@types/webpack": "^5"
+            "@types/webpack-dev-server>@types/webpack": "^5",
+            "minimist@<0.2.1 || >=1.0.0 <1.2.3": ">=0.2.1 <1.0.0 || >=1.2.3"
         }
     },
     "sideEffects": [

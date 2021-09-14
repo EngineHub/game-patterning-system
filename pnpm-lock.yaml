@@ -2,6 +2,7 @@ lockfileVersion: 5.3
 
 overrides:
   '@types/webpack-dev-server>@types/webpack': ^5
+  minimist@<0.2.1 || >=1.0.0 <1.2.3: '>=0.2.1 <1.0.0 || >=1.2.3'
 
 specifiers:
   '@babel/core': ^7.15.5
@@ -4956,10 +4957,6 @@ packages:
       brace-expansion: 1.1.11
     dev: true
 
-  /minimist/0.0.8:
-    resolution: {integrity: sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0=}
-    dev: true
-
   /minimist/1.2.5:
     resolution: {integrity: sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==}
     dev: true
@@ -4973,7 +4970,7 @@ packages:
     deprecated: Legacy versions of mkdirp are no longer supported. Please update to mkdirp 1.x. (Note that the API surface has changed to use Promises in 1.x.)
     hasBin: true
     dependencies:
-      minimist: 0.0.8
+      minimist: 1.2.5
     dev: true
 
   /mkdirp/0.5.5:
