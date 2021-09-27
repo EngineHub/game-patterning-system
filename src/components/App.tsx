@@ -2,10 +2,19 @@ import React from "react";
 import AppNavbar from "./AppNavbar";
 import {Columns, Section} from "react-bulma-components";
 import PatternBuilder from "./PatternBuilder";
-import {Provider} from "react-redux";
-import {STORE} from "../data/redux/store";
+import {Provider, useSelector} from "react-redux";
+import {RootState, STORE} from "../data/redux/store";
 import {IdProvider} from "react-use-id-hook";
 import {SimpleErrorBoundary} from "./SimpleErrorBoundary";
+import {SharingIsCaring} from "./SharingIsCaring";
+
+const ShareCurrentPattern: React.FC = () => {
+    const link = useSelector((state: RootState) => state.pattern.shareLink);
+    if (typeof link === "undefined") {
+        return <></>;
+    }
+    return <SharingIsCaring link={link}/>;
+};
 
 const App: React.FC = () => {
     return <SimpleErrorBoundary>
@@ -26,7 +35,14 @@ const App: React.FC = () => {
                             </p>
                         </Columns.Column>
                         <Columns.Column>
-                            <h2 className="title">Simple Block Pattern</h2>
+                            <Columns>
+                                <Columns.Column>
+                                    <h2 className="title">Simple Block Pattern</h2>
+                                </Columns.Column>
+                                <Columns.Column className="is-flex is-justify-content-end">
+                                    <ShareCurrentPattern/>
+                                </Columns.Column>
+                            </Columns>
                             <PatternBuilder/>
                         </Columns.Column>
                         <Columns.Column size="one-fifth"/>

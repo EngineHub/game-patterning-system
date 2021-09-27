@@ -36,6 +36,13 @@ export const PatternHook: Hook = {
                 mapStateToPattern(store),
                 filter(isNonNull),
             )
-            .subscribe(v => store.dispatch(setPattern(v)));
+            .subscribe({
+                next(v) {
+                    store.dispatch(setPattern(v));
+                },
+                error(e) {
+                    console.warn("Error mapping pattern from hash", e);
+                },
+            });
     }
 };

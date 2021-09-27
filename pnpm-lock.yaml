@@ -11,7 +11,6 @@ specifiers:
   '@fortawesome/fontawesome-svg-core': ^1.2.36
   '@fortawesome/free-solid-svg-icons': ^5.15.4
   '@fortawesome/react-fontawesome': ^0.1.15
-  '@popperjs/core': ^2.10.1
   '@reduxjs/toolkit': ^1.6.1
   '@types/favicons': ^6.2.2
   '@types/mini-css-extract-plugin': ^2.3.0
@@ -49,7 +48,6 @@ specifiers:
   react-select: ^5.0.0
   react-use: ^17.3.1
   react-use-id-hook: ^1.0.1
-  react-use-promise: ^0.4.1
   redux: ^4.1.1
   rxjs: ^7.3.0
   sass: ^1.42.1
@@ -71,7 +69,6 @@ dependencies:
   '@fortawesome/fontawesome-svg-core': 1.2.36
   '@fortawesome/free-solid-svg-icons': 5.15.4
   '@fortawesome/react-fontawesome': 0.1.15_f515edce028694561ceb456e3dba224c
-  '@popperjs/core': 2.10.1
   '@reduxjs/toolkit': 1.6.1_react-redux@7.2.5+react@17.0.2
   axios: 0.21.4
   bulma: 0.9.3
@@ -85,7 +82,6 @@ dependencies:
   react-select: 5.0.0_f1305910b6e0a710003da81d80c74c56
   react-use: 17.3.1_react-dom@17.0.2+react@17.0.2
   react-use-id-hook: 1.0.1_react@17.0.2
-  react-use-promise: 0.4.1_react@17.0.2
   redux: 4.1.1
   webfontloader: 1.6.28
 
@@ -1828,10 +1824,6 @@ packages:
   /@polka/url/1.0.0-next.20:
     resolution: {integrity: sha512-88p7+M0QGxKpmnkfXjS4V26AnoC/eiqZutE8GLdaI5X12NY75bXSdTY9NkmYb2Xyk1O+MmkuO6Frmsj84V6I8Q==}
     dev: true
-
-  /@popperjs/core/2.10.1:
-    resolution: {integrity: sha512-HnUhk1Sy9IuKrxEMdIRCxpIqPw6BFsbYSEUO9p/hNw5sMld/+3OLMWQP80F8/db9qsv3qUjs7ZR5bS/R+iinXw==}
-    dev: false
 
   /@reduxjs/toolkit/1.6.1_react-redux@7.2.5+react@17.0.2:
     resolution: {integrity: sha512-pa3nqclCJaZPAyBhruQtiRwtTjottRrVJqziVZcWzI73i6L3miLTtUyWfauwv08HWtiXLx1xGyGt+yLFfW/d0A==}
@@ -5927,14 +5919,6 @@ packages:
     resolution: {integrity: sha512-bCZEZhUEtLluNt3XHn31Fr3o7bdnvu4ugH2RuFg+wMytglnUOsPSTSf598DtS+Z8O/JvnE6LGvQZor08XA8c1g==}
     peerDependencies:
       react: '>=16'
-    dependencies:
-      react: 17.0.2
-    dev: false
-
-  /react-use-promise/0.4.1_react@17.0.2:
-    resolution: {integrity: sha512-uIOsLF0em7YRM0cLeOqmOQ1fFGQHoDxyLsiP0InX/e3rdSbDSwkd3CkKsmu8F4oYY9ao2944AgBN6HvQ0rILsA==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.2
     dependencies:
       react: 17.0.2
     dev: false

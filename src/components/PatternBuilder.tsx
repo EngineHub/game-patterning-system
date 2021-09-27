@@ -8,8 +8,6 @@ import {BlockStateSelector} from "./BlockStateSelector";
 import {asNonNull, requireNonNull} from "../util/preconditions";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faInfo} from "@fortawesome/free-solid-svg-icons";
-import {ShareButton} from "./ShareButton";
-import {urlEncoded} from "../util/formatters";
 import {LoadingStuff} from "./LoadingStuff";
 import {SimpleBlockPattern} from "../data/Pattern";
 import {setPattern} from "../data/redux/pattern";
@@ -51,17 +49,9 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData, patte
         [pattern, dispatch],
     );
 
-    const dataVersion = useSelector((state: RootState) => "" + state.version.data);
     const patternString = useMemo(
         () => serializeState(currentBlockData.defaultState, {id: pattern.state.id, properties: state}),
         [currentBlockData, pattern, state],
-    );
-    const shareLink = useMemo(
-        () => new URL(
-            urlEncoded`#dataVersion=${dataVersion}&pattern=${patternString}`,
-            document.location.href
-        ).href,
-        [dataVersion, patternString]
     );
 
     return <Columns centered>
@@ -76,12 +66,7 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData, patte
             </div>
         </Columns.Column>
         <Columns.Column className="has-background-success-dark">
-            <div className="is-flex is-justify-content-space-between">
-                <div>
-                    <h3 className="subtitle">Pattern</h3>
-                </div>
-                <ShareButton link={shareLink}/>
-            </div>
+            <h3 className="subtitle">Pattern</h3>
             <p className="mb-3">
                 <Icon text color="info" colorVariant="light">
                     <Icon>

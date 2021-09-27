@@ -53,12 +53,11 @@ const options: (env: KnownEnv) => Configuration = (env) => {
                     },
                 },
             }),
-            new ESLintWebpackPlugin(),
-            new ProgressPlugin(),
-            new BundleAnalyzerPlugin({
-                analyzerMode: "static",
-                openAnalyzer: false,
+            new ESLintWebpackPlugin({
+                extensions: ['ts', 'tsx'],
+                exclude: ['node_modules'],
             }),
+            new ProgressPlugin(),
         ],
         resolve: {
             extensions: ['.tsx', '.ts', '.js'],
@@ -137,6 +136,12 @@ const options: (env: KnownEnv) => Configuration = (env) => {
         });
     } else {
         return merge(common, {
+            plugins: [
+                new BundleAnalyzerPlugin({
+                    analyzerMode: "static",
+                    openAnalyzer: false,
+                }),
+            ],
             devtool: 'source-map',
             mode: 'production',
             optimization: {
