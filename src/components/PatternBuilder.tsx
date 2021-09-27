@@ -1,80 +1,73 @@
-import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {useSelector} from "react-redux";
-import {RootState} from "../data/redux/store";
-import {
-    BlockData,
-    BlockState,
-    deserializeStateChecked,
-    extractIdFromStateString,
-    serializeState
-} from "../data/BlockData";
+import React, {useCallback, useMemo} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState, RootStore} from "../data/redux/store";
+import {BlockData, BlockState, serializeState} from "../data/BlockData";
 import {StringSelector} from "./StringSelector";
 import {Box, Columns, Icon} from "react-bulma-components";
 import {BlockStateSelector} from "./BlockStateSelector";
-import {asNonNull} from "../util/preconditions";
+import {asNonNull, requireNonNull} from "../util/preconditions";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faInfo} from "@fortawesome/free-solid-svg-icons";
 import {ShareButton} from "./ShareButton";
-import {useLocation} from "react-use";
-import * as queryString from "query-string";
+import {urlEncoded} from "../util/formatters";
+import {LoadingStuff} from "./LoadingStuff";
+import {SimpleBlockPattern} from "../data/Pattern";
+import {setPattern} from "../data/redux/pattern";
 
 interface PatternBuilderImplProps {
     blockData: Record<string, BlockData>;
+    pattern: SimpleBlockPattern;
 }
 
-function useHashState(
-    blockData: Record<string, BlockData>,
-    setSelectedId: (value: string) => void,
-    setState: (value: BlockState['properties']) => void,
-): void {
-    const {hash} = useLocation();
-    const parsedHash = useMemo(() => queryString.parse(hash || ''), [hash]);
-    const patternStringFromHash = useMemo(() => {
-        const pattern = parsedHash['pattern'];
-        if (pattern instanceof Array) {
-            return pattern[0];
-        }
-        return pattern;
-    }, [parsedHash]);
-
-    useEffect(() => {
-        if (!patternStringFromHash) {
-            return;
-        }
-        const hashBlockData = blockData[extractIdFromStateString(patternStringFromHash)];
-        if (typeof hashBlockData === "undefined") {
-            return;
-        }
-        const state = deserializeStateChecked(patternStringFromHash, hashBlockData.properties);
-        setSelectedId(state.id);
-        setState({...hashBlockData.defaultState.properties, ...state.properties});
-    }, [blockData, patternStringFromHash, setSelectedId, setState]);
-}
-
-const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
-    const validIds = useMemo(() => Object.keys(blockData), [blockData]);
-    const [selectedId, setSelectedId] = useState<string>(asNonNull(validIds[0]));
-
-    const currentBlockData = asNonNull(blockData[selectedId]);
-    const [state, setState] = useState<BlockState['properties']>({...currentBlockData.defaultState.properties});
-
-    const pattern = useMemo(() => serializeState(currentBlockData, state), [currentBlockData, state]);
-    const shareLink = useMemo(
-        () => new URL(`#pattern=${encodeURIComponent(pattern)}`, document.location.href).href,
-        [pattern]
+const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData, pattern}) => {
+    const validIds = useMemo(
+        () => Object.keys(blockData).sort((a, b) => a.localeCompare(b)),
+        [blockData]
     );
 
-    const safeSetSelectedId = useCallback((selected: string) => {
-        setSelectedId(selected);
-        setState({...asNonNull(blockData[selected]).defaultState.properties});
-    }, [blockData]);
+    const currentBlockData: BlockData = asNonNull(blockData[pattern.state.id]);
 
-    useHashState(blockData, setSelectedId, setState);
+    const dispatch: RootStore['dispatch'] = useDispatch();
+    const setStateId = useCallback(
+        (id: string) => dispatch(setPattern({
+            type: pattern.type,
+            state: {...asNonNull(blockData[id]).defaultState},
+        })),
+        [blockData, pattern, dispatch],
+    );
+
+    const state = useMemo(
+        () => ({...currentBlockData.defaultState.properties, ...pattern.state.properties}),
+        [currentBlockData, pattern],
+    );
+    const setState = useCallback(
+        (properties: BlockState['properties']) => dispatch(setPattern({
+            type: pattern.type,
+            state: {
+                id: pattern.state.id,
+                properties: {...properties},
+            },
+        })),
+        [pattern, dispatch],
+    );
+
+    const dataVersion = useSelector((state: RootState) => "" + state.version.data);
+    const patternString = useMemo(
+        () => serializeState(currentBlockData.defaultState, {id: pattern.state.id, properties: state}),
+        [currentBlockData, pattern, state],
+    );
+    const shareLink = useMemo(
+        () => new URL(
+            urlEncoded`#dataVersion=${dataVersion}&pattern=${patternString}`,
+            document.location.href
+        ).href,
+        [dataVersion, patternString]
+    );
 
     return <Columns centered>
         <Columns.Column size="one-third" className="has-background-primary-dark">
             <h3 className="subtitle">Pick a block</h3>
-            <StringSelector selected={selectedId} setSelected={safeSetSelectedId} options={validIds}/>
+            <StringSelector selected={pattern.state.id} setSelected={setStateId} options={validIds}/>
             <div className="has-background-info-dark p-3">
                 <BlockStateSelector
                     state={state}
@@ -101,7 +94,7 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
                 </small>
             </p>
             <Box>
-                <span className="is-family-code">{Array.from(pattern).map((x, i) => {
+                <span className="is-family-code">{Array.from(patternString).map((x, i) => {
                     if (x === ',' || x === '[' || x === ':') {
                         // safe to use index here, these are all interchangeable
                         return <React.Fragment key={`${i}-${x}`}>
@@ -117,14 +110,29 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData}) => {
 };
 
 const PatternBuilder: React.FC = () => {
-    const blockData = useSelector((state: RootState) => state.blockData.data);
+    const blockData = useSelector((state: RootState) => state.blockData.current);
+    const pattern = useSelector((state: RootState) => state.pattern.current);
     if (typeof blockData === "undefined") {
-        return <div>Loading...</div>;
+        return <LoadingStuff text={"Loading block data..."}/>;
     }
-    if (typeof blockData === "string") {
-        return <div>Error: {blockData}</div>;
+    if (blockData.type === "err") {
+        return <div>
+            <p>
+                Error loading block data:
+                <code className="bg-dark text-white p-1 m-1">
+                    {blockData.value.message}
+                </code>
+            </p>
+            <details>
+                <summary>Stack</summary>
+                <pre className="bg-dark p-1">
+                    {blockData.value.stack}
+                </pre>
+            </details>
+        </div>;
     }
-    return <PatternBuilderImpl blockData={blockData}/>;
+    requireNonNull(pattern, "Pattern should never be undefined if block data is present.");
+    return <PatternBuilderImpl blockData={blockData.value} pattern={pattern}/>;
 };
 
 export default PatternBuilder;

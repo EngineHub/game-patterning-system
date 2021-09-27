@@ -1,5 +1,5 @@
-import {RawBlockData, RawBlockProperty} from "./raw/RawBlockData";
 import {requireNonNull} from "../util/preconditions";
+import {Pattern} from "./Pattern";
 
 export interface BlockState {
     id: string;
@@ -14,10 +14,10 @@ export interface BlockData {
 type Direction = "north" | "east" | "west" | "south" | "up" | "down";
 
 export type BlockPropertyTypeInJs = {
-    int: number,
+    int: string,
     enum: string,
     direction: Direction,
-    boolean: boolean,
+    boolean: "true" | "false",
 };
 
 export type BlockPropertyType = keyof BlockPropertyTypeInJs;
@@ -25,9 +25,9 @@ export type BlockPropertyType = keyof BlockPropertyTypeInJs;
 const parserImplementations: {
     [k in BlockPropertyType]: (value: string) => BlockPropertyTypeInJs[k] | undefined
 } = {
-    int(value: string): number | undefined {
+    int(value: string): string | undefined {
         const n = parseInt(value);
-        return isNaN(n) ? undefined : n;
+        return isNaN(n) ? undefined : n.toString();
     },
     enum(value: string): string {
         return value;
@@ -45,21 +45,13 @@ const parserImplementations: {
                 return undefined;
         }
     },
-    boolean(value: string): boolean | undefined {
-        return value === "true" ? true : (value === "false" ? false : undefined);
+    boolean(value: string): "true" | "false" | undefined {
+        return value === "true" ? "true" : (value === "false" ? "false" : undefined);
     },
 };
 
 export function parseFromString<T extends BlockPropertyType>(type: T, value: string): BlockPropertyTypeInJs[T] | undefined {
     return parserImplementations[type](value) as BlockPropertyTypeInJs[T];
-}
-
-function fromStringIter<T extends BlockPropertyType>(type: T, values: Iterable<string>): BlockPropertyTypeInJs[T][] {
-    return Array.from(new Set(Array.from(values).map(v => {
-        const parsed = parseFromString(type, v);
-        requireNonNull(parsed, `Value ${v} is invalid for this property`);
-        return parsed;
-    })));
 }
 
 type BaseBlockProperty<T extends BlockPropertyType> = {
@@ -74,55 +66,18 @@ export type BooleanBlockProperty = BaseBlockProperty<"boolean">;
 
 export type BlockProperty = IntBlockProperty | EnumBlockProperty | DirectionBlockProperty | BooleanBlockProperty;
 
-
-export function loadFromRaw(blockManifest: RawBlockData): BlockData {
-    const properties = loadRawProperties(blockManifest.properties);
-    const defaultState = deserializeStateChecked(blockManifest.defaultstate, properties);
-    return {
-        defaultState,
-        properties,
-    };
-}
-
-function convertToNonRaw<T extends BlockPropertyType>(type: T, rawValues: string[]): BaseBlockProperty<T> {
-    return {
-        type,
-        values: fromStringIter(type, rawValues),
-    };
-}
-
-function loadRawProperties(properties: Record<string, RawBlockProperty>): Record<string, BlockProperty> {
-    const newRecord = {} as Record<string, BlockProperty>;
-    for (const key of Object.keys(properties)) {
+export function checkState(blockState: BlockState, properties: Record<string, BlockProperty>): void {
+    for (const [key, rawValue] of Object.entries(blockState.properties)) {
         const property = properties[key];
-        requireNonNull(property);
-        let fixedType: BlockPropertyType;
-        switch (property.type) {
-            case "int":
-            case "enum":
-            case "direction":
-                fixedType = property.type;
-                break;
-            case "bool":
-                fixedType = "boolean";
-                break;
-            default:
-                throw new Error(`[${key}] Unknown type: ${property.type}`);
+        requireNonNull(property, `Assigning to a non-existent property ${key}`);
+        const value = parseFromString(property.type, rawValue);
+        if (typeof value === "undefined" || (property.values as unknown[]).indexOf(value) < 0) {
+            throw new Error(`Value ${rawValue} is not allowed by the property ${key}`);
         }
-        newRecord[key] = convertToNonRaw(fixedType, property.values) as BlockProperty;
     }
-    return newRecord;
 }
 
-export function extractIdFromStateString(stateString: string) : string {
-    const leftBracketIdx = stateString.indexOf('[');
-    if (leftBracketIdx < 0) {
-        return stateString;
-    }
-    return stateString.substring(0, leftBracketIdx);
-}
-
-export function deserializeStateChecked(stateString: string, properties: Record<string, BlockProperty>): BlockState {
+export function deserializeState(stateString: string): BlockState {
     const leftBracketIdx = stateString.indexOf('[');
     if (leftBracketIdx < 0) {
         return {id: stateString, properties: {}};
@@ -136,22 +91,16 @@ export function deserializeStateChecked(stateString: string, properties: Record<
         const [key, rawValue] = assignment.split('=', 2);
         requireNonNull(key);
         requireNonNull(rawValue, `Missing property assignment for ${key}: ${stateString}`);
-        const property = properties[key];
-        requireNonNull(property, `Assigning to a non-existent property ${key}: ${stateString}`);
-        const value = parseFromString(property.type, rawValue);
-        if (typeof value === "undefined" || (property.values as unknown[]).indexOf(value) < 0) {
-            throw new Error(`Value ${rawValue} is not allowed by the property ${key}: ${stateString}`);
-        }
-        newProperties[key] = value;
+        newProperties[key] = rawValue;
     }
     return {id: stateString.substring(0, leftBracketIdx), properties: newProperties};
 }
 
-export function serializeState(blockData: BlockData, state: BlockState['properties']): string {
-    let result = blockData.defaultState.id;
-    const nonDefaultAssignments = Object.entries(state)
+export function serializeState(defaultState: BlockState, state: BlockState): string {
+    let result = state.id;
+    const nonDefaultAssignments = Object.entries(state.properties)
         .sort((a, b) => a[0].localeCompare(b[0]))
-        .filter(([k, v]) => v !== blockData.defaultState.properties[k]);
+        .filter(([k, v]) => v !== defaultState.properties[k]);
     if (nonDefaultAssignments.length > 0) {
         const assignmentsString = nonDefaultAssignments
             .map(([k, v]) => `${k}=${v}`)
@@ -159,4 +108,65 @@ export function serializeState(blockData: BlockData, state: BlockState['properti
         result += "[" + assignmentsString + "]";
     }
     return result;
+}
+
+/**
+ * Filter the current pattern to work with the upcoming data table.
+ *
+ * @param pattern the pattern to filter
+ * @param upcomingDataTable the new data table to validate against
+ */
+export function preparePattern(
+    pattern: Pattern | undefined,
+    upcomingDataTable: Record<string, BlockData>
+): Pattern {
+    if (typeof pattern === "undefined") {
+        // Nothing to filter. Set default pattern.
+        return {
+            type: "simple-block-pattern",
+            state: getDefaultState(upcomingDataTable),
+        };
+    }
+    const upcomingBlockData = upcomingDataTable[pattern.state.id];
+    if (typeof upcomingBlockData === "undefined") {
+        // The ID is missing, reset entire pattern.
+        return {
+            type: "simple-block-pattern",
+            state: getDefaultState(upcomingDataTable),
+        };
+    }
+    let modified = false;
+    const newProperties: Record<string, BlockPropertyTypeInJs[BlockPropertyType]> = {};
+    for (const [k, v] of Object.entries(pattern.state.properties)) {
+        const upcomingProperty = upcomingBlockData.properties[k];
+        if (typeof upcomingProperty === "undefined") {
+            // Property doesn't exist, drop it.
+            modified = true;
+            continue;
+        }
+        if (!(upcomingProperty.values as string[]).includes(v)) {
+            // Value isn't allowed, drop it.
+            modified = true;
+            continue;
+        }
+        newProperties[k] = v;
+    }
+    if (!modified) {
+        return pattern;
+    } else {
+        return {
+            type: "simple-block-pattern",
+            state: {
+                id: pattern.state.id,
+                properties: newProperties,
+            },
+        };
+    }
+}
+
+function getDefaultState(dataTable: Record<string, BlockData>): BlockState {
+    const firstEntry = Object.entries(dataTable)
+        .sort((a, b) => a[0].localeCompare(b[0]))[0];
+    requireNonNull(firstEntry, "No first entry in data table");
+    return firstEntry[1].defaultState;
 }

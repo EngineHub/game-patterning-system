@@ -1,32 +1,17 @@
 import {configureStore} from "@reduxjs/toolkit";
-import {blockDataReducer, failBlockData, setBlockData} from "./block-data";
-import {DATA_API} from "../raw/AwfulRawGitHubDataApi";
-import {BlockData, loadFromRaw} from "../BlockData";
+import {blockDataReducer} from "./block-data";
+import {versionReducer} from "./version";
+import {hashReducer} from "./hash";
+import {patternReducer} from "./pattern";
 
-export const store = configureStore({
+export const STORE = configureStore({
     reducer: {
         blockData: blockDataReducer,
+        version: versionReducer,
+        hash: hashReducer,
+        pattern: patternReducer,
     },
 });
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
-
-async function loadBlockData(): Promise<Record<string, BlockData>> {
-    const rawBlockData = await DATA_API.getBlocks();
-    return Object.entries(rawBlockData)
-        .map<[string, BlockData]>(([k, v]) => [k, loadFromRaw(v)])
-        .reduce((x, [k, v]) => ({...x, [k]: v}), {});
-}
-
-async function init(): Promise<void> {
-    try {
-        store.dispatch(setBlockData(await loadBlockData()));
-    } catch (e) {
-        if (e instanceof Error) {
-            store.dispatch(failBlockData(JSON.stringify(e)));
-        }
-    }
-}
-
-init().catch(e => console.error(e));
+export type RootStore = typeof STORE;
+export type RootState = ReturnType<RootStore['getState']>;

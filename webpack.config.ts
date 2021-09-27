@@ -6,6 +6,8 @@ import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import merge from "webpack-merge";
 import FaviconsWebpackPlugin from "favicons-webpack-plugin";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
+import corejsJson from "core-js/package.json";
+import {BundleAnalyzerPlugin} from "webpack-bundle-analyzer";
 
 interface KnownEnv {
     WEBPACK_SERVE: boolean
@@ -44,9 +46,21 @@ const options: (env: KnownEnv) => Configuration = (env) => {
             new MiniCssExtractPlugin({
                 filename: `${format}.css`,
             }),
-            new ForkTsCheckerWebpackPlugin(),
+            new ForkTsCheckerWebpackPlugin({
+                typescript: {
+                    diagnosticOptions: {
+                        semantic: true,
+                        syntactic: true,
+                    },
+                },
+            }),
             new ESLintWebpackPlugin(),
             new ProgressPlugin(),
+            new BundleAnalyzerPlugin({
+                analyzerMode: "static",
+                reportFilename: "dist/report.html",
+                openAnalyzer: false,
+            }),
         ],
         resolve: {
             extensions: ['.tsx', '.ts', '.js'],
@@ -63,11 +77,32 @@ const options: (env: KnownEnv) => Configuration = (env) => {
                 },
                 {
                     test: /\.tsx?$/,
-                    loader: 'ts-loader',
+                    use: [
+                        {
+                            loader: 'babel-loader',
+                            options: {
+                                presets: [
+                                    [
+                                        '@babel/preset-env',
+                                        {
+                                            bugfixes: true,
+                                            debug: true,
+                                            useBuiltIns: 'usage',
+                                            corejs: corejsJson.version,
+                                            shippedProposals: true,
+                                        },
+                                    ],
+                                ],
+                            },
+                        },
+                        {
+                            loader: 'ts-loader',
+                            options: {
+                                transpileOnly: true,
+                            },
+                        },
+                    ],
                     exclude: /node_modules/,
-                    options: {
-                        transpileOnly: true,
-                    },
                 },
             ],
         },
@@ -75,6 +110,18 @@ const options: (env: KnownEnv) => Configuration = (env) => {
             runtimeChunk: "single",
             splitChunks: {
                 chunks: "all",
+                cacheGroups: {
+                    react: {
+                        test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+                        name: 'react',
+                        chunks: 'all',
+                    },
+                    reactBulma: {
+                        test: /[\\/]node_modules[\\/](react-bulma.*)[\\/]/,
+                        name: 'reactBulma',
+                        chunks: 'all',
+                    },
+                },
             },
         },
         performance: {
@@ -84,15 +131,19 @@ const options: (env: KnownEnv) => Configuration = (env) => {
     if (env.WEBPACK_SERVE) {
         return merge(common, {
             mode: 'development',
-            devtool: 'eval-source-map',
+            devtool: 'source-map',
             devServer: {
                 static: './dist',
+                port: 9323,
             },
         });
     } else {
         return merge(common, {
             devtool: 'source-map',
             mode: 'production',
+            optimization: {
+                removeAvailableModules: true,
+            },
         });
     }
 };

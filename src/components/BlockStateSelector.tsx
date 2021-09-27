@@ -5,7 +5,7 @@ import {asNonNull, requireNonNull} from "../util/preconditions";
 
 export interface BlockStateSelectorProps {
     state: BlockState['properties'];
-    setState: (modifier: (existing: BlockState['properties']) => BlockState['properties']) => void;
+    setState: (properties: BlockState['properties']) => void;
     properties: Record<string, BlockProperty>;
 }
 
@@ -15,7 +15,7 @@ export const BlockStateSelector: React.FC<BlockStateSelectorProps> = ({state, se
             return <BlockPropertySelector
                 key={k}
                 value={asNonNull(state[k], `Missing '${k}' in state`)}
-                setValue={(v): void => setState(existing => ({...existing, [k]: v}))}
+                setValue={(v): void => setState({...state, [k]: v})}
                 propertyKey={k}
                 property={v}
             />;

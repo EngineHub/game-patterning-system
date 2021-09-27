@@ -3,13 +3,13 @@ import AppNavbar from "./AppNavbar";
 import {Columns, Section} from "react-bulma-components";
 import PatternBuilder from "./PatternBuilder";
 import {Provider} from "react-redux";
-import {store} from "../data/redux/store";
+import {STORE} from "../data/redux/store";
 import {IdProvider} from "react-use-id-hook";
 import {SimpleErrorBoundary} from "./SimpleErrorBoundary";
 
 const App: React.FC = () => {
     return <SimpleErrorBoundary>
-        <Provider store={store}>
+        <Provider store={STORE}>
             <IdProvider>
                 <AppNavbar/>
                 <Section>
