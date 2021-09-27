@@ -1,6 +1,5 @@
-import React, {useMemo} from "react";
-import Select, {Theme} from "react-select";
-import {ReactComponentProps} from "../util/types";
+import React, {useMemo, useState} from "react";
+import Select, {StylesConfig, Theme} from "react-select";
 
 export interface StringSelectorProps {
     selected: string | undefined;
@@ -8,8 +7,12 @@ export interface StringSelectorProps {
     options: string[];
 }
 
-// noinspection JSUnusedGlobalSymbols
-const SELECT_STYLES: ReactComponentProps<Select>['styles'] = {
+interface OptionObject {
+    label: string;
+    value: string;
+}
+
+const SELECT_STYLES: StylesConfig<OptionObject, false> = {
     container(styles) {
         return {
             ...styles,
@@ -42,14 +45,18 @@ export const StringSelector: React.FC<StringSelectorProps> = ({selected, setSele
         () => new Map(options.map(o => [o, {label: o, value: o}])),
         [options]
     );
+    const fixedOptionValues = useMemo(() => Array.from(fixedOptions.values()), [fixedOptions]);
     const selectedOptionObject = useMemo(
         () => typeof selected === "string" ? fixedOptions.get(selected) : undefined,
         [selected, fixedOptions]
     );
+    const [showing, setShowing] = useState(true);
+
     return <Select
         aria-label="Pick a block"
-        options={Array.from(fixedOptions.values())}
+        options={fixedOptionValues}
         value={selectedOptionObject}
+        isMulti={false}
         onChange={(v) => void (v && setSelected(v.value))}
         isSearchable
         styles={SELECT_STYLES}
@@ -57,5 +64,8 @@ export const StringSelector: React.FC<StringSelectorProps> = ({selected, setSele
         menuPortalTarget={document.body}
         menuPosition="absolute"
         menuShouldScrollIntoView={false}
+        controlShouldRenderValue={showing}
+        onMenuOpen={(): void => setShowing(false)}
+        onMenuClose={(): void => setShowing(true)}
     />;
 };

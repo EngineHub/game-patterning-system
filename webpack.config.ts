@@ -50,7 +50,6 @@ const options: (env: KnownEnv) => Configuration = (env) => {
                 typescript: {
                     diagnosticOptions: {
                         semantic: true,
-                        syntactic: true,
                     },
                 },
             }),
@@ -58,7 +57,6 @@ const options: (env: KnownEnv) => Configuration = (env) => {
             new ProgressPlugin(),
             new BundleAnalyzerPlugin({
                 analyzerMode: "static",
-                reportFilename: "dist/report.html",
                 openAnalyzer: false,
             }),
         ],
