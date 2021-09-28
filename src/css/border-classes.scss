@@ -10,3 +10,8 @@
     border-color: $color !important;
   }
 }
+
+.no-border-right {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}

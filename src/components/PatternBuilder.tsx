@@ -1,9 +1,9 @@
 import React, {useCallback, useMemo} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState, RootStore} from "../data/redux/store";
-import {BlockData, BlockState, serializeState} from "../data/BlockData";
+import {BlockData, BlockState} from "../data/BlockData";
 import {StringSelector} from "./StringSelector";
-import {Box, Columns, Icon} from "react-bulma-components";
+import {Box, Columns, Form, Icon} from "react-bulma-components";
 import {BlockStateSelector} from "./BlockStateSelector";
 import {asNonNull, requireNonNull} from "../util/preconditions";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -11,11 +11,23 @@ import {faInfo} from "@fortawesome/free-solid-svg-icons";
 import {LoadingStuff} from "./LoadingStuff";
 import {SimpleBlockPattern} from "../data/Pattern";
 import {setPattern} from "../data/redux/pattern";
+import {CopyPastaButton} from "./CopyPastaButton";
 
 interface PatternBuilderImplProps {
     blockData: Record<string, BlockData>;
     pattern: SimpleBlockPattern;
 }
+
+const CopyCurrentPattern: React.FC<{className: string}> = ({className}) => {
+    const serializedPattern = useSelector((state: RootState) => state.pattern.serialized);
+    if (typeof serializedPattern === "undefined") {
+        return <></>;
+    }
+    return <CopyPastaButton className={className}
+                            textToCopy={serializedPattern}
+                            idleButtonText="Copy pattern"
+                            detailText="Copy this pattern"/>;
+};
 
 const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData, pattern}) => {
     const validIds = useMemo(
@@ -49,10 +61,7 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData, patte
         [pattern, dispatch],
     );
 
-    const patternString = useMemo(
-        () => serializeState(currentBlockData.defaultState, {id: pattern.state.id, properties: state}),
-        [currentBlockData, pattern, state],
-    );
+    const patternString = useSelector((state: RootState) => state.pattern.serialized) || '';
 
     return <Columns centered>
         <Columns.Column size="one-third" className="has-background-primary-dark">
@@ -78,18 +87,25 @@ const PatternBuilderImpl: React.FC<PatternBuilderImplProps> = ({blockData, patte
                     it
                 </small>
             </p>
-            <Box>
-                <span className="is-family-code">{Array.from(patternString).map((x, i) => {
-                    if (x === ',' || x === '[' || x === ':') {
-                        // safe to use index here, these are all interchangeable
-                        return <React.Fragment key={`${i}-${x}`}>
-                            {x}
-                            <wbr/>
-                        </React.Fragment>;
-                    }
-                    return x;
-                })}</span>
-            </Box>
+            <Form.Field kind="addons">
+                <Form.Control className="is-flex-grow-1">
+                    <Box className="no-border-right">
+                        <span className="is-family-code">{Array.from(patternString).map((x, i) => {
+                            if (x === ',' || x === '[' || x === ':') {
+                                // safe to use index here, these are all interchangeable
+                                return <React.Fragment key={`${i}-${x}`}>
+                                    {x}
+                                    <wbr/>
+                                </React.Fragment>;
+                            }
+                            return x;
+                        })}</span>
+                    </Box>
+                </Form.Control>
+                <Form.Control className="is-flex is-flex-direction-column">
+                    <CopyCurrentPattern className="is-flex-grow-1"/>
+                </Form.Control>
+            </Form.Field>
         </Columns.Column>
     </Columns>;
 };
